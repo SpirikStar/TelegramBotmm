@@ -55,5 +55,5 @@ class TelegramBot(DataBase):
 
 TelegramBot(
     db_name="tg.db",
-    token="7171346715:AAHgc5AQnASkGc4QKRoy9PYcCZ_xS5gZV5M"
+    token=""
 )
