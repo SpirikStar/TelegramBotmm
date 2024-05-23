@@ -3,6 +3,7 @@ import datetime
 import sqlite3
 import re
 
+
 class DataBase:
     def __init__(self, db_name):
         self.db_name = db_name
@@ -101,6 +102,17 @@ class DataBase:
 
         return id_message
 
+    def check_application(self, id_application: int):
+        sql = self.connect_db()
+        sql["cursor"].execute('''
+            SELECT message_id FROM messages WHERE id = ?                      
+        ''', (id_application, ))
+        
+        data_message = sql["cursor"].fetchone()
+        self.close(sql["cursor"], sql["connect"])
+        
+        return data_message
+
     def close(self, cursor, connect):
         cursor.close()
         connect.close()
@@ -143,22 +155,23 @@ ID пользователя: {message.from_user.id}
 Сообщение: {message.text}
             '''
                 self.bot.send_message(self.admin_chat_id, text)
-            
+
             elif message.chat.id == self.admin_chat_id and message.reply_to_message != None:
                 reply_message = str(message.reply_to_message.text)
-                id_application = re.search(r'Номер заявки №(\d+)', reply_message).group(1)
-                id_user = re.search(r'ID пользователя: (\d+)', reply_message).group(1)
-                message_text = reply_message.split("\n")[2].split(': ')[-1] # Исправим
+                id_application = re.search(
+                    r'Номер заявки №(\d+)', reply_message).group(1)
+                id_user = re.search(
+                    r'ID пользователя: (\d+)', reply_message).group(1)
                 
-                current_text = message.text
+                
+                id_message_user = self.check_application(id_application)
                 
                 self.bot.send_message(
                     id_user,
-                    f"Ответ от администратора: {current_text}",
-                    # reply_to_message_id=56
+                    f"Ответ от администратора: {message.text}",
+                    reply_to_message_id=id_message_user[0]
                 )
-                
-                
+
         self.bot.polling()
 
 
